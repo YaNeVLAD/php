@@ -5,4 +5,4 @@ if ($_GET === []) {
     die('Не передано никаких данных через GET запрос');
 }
 $controller = new \App\Controller\UserController();
-$controller->UpdateUser($_GET, $_FILES['avatar_path']);
+$controller->UpdateUser($_GET, $_POST, $_FILES['avatar_path']);

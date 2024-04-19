@@ -5,53 +5,22 @@ namespace App\Model;
 
 class UserTable
 {
-    private function getAvatarName(int $userId): ?string
-    {
-        $query = "SELECT avatar_path FROM user WHERE user_id = $userId";
-        $statement = $this->connection->query($query);
-        if ($statement === false) {
-            throw new \Exception("Failed to find user avatar");
-        }
-        $avatarName = $statement->fetch(\PDO::FETCH_ASSOC);
-        return $avatarName['avatar_path'];
-    }
-
-    private function deletePrevAvatar(int $userId): void
-    {
-        try {
-            $avatarName = $this->getAvatarName($userId);
-        } catch (\Exception $e) {
-            echo $e;
-            die();
-        }
-        unlink('uploads/' . $avatarName);
-    }
-
-    private function createUserFromRow(array $row): User
-    {
-        return new User(
-            $row['user_id'] ?? null,
-            $row['first_name'],
-            $row['last_name'],
-            $row['middle_name'] ?? null,
-            $row['gender'],
-            $row['birth_date'] ?? null,
-            $row['email'],
-            $row['phone'],
-            $row['avatar_path'] ?? null,
-        );
-    }
-
+    //Переменные и конструктор класса
     public function __construct(private \PDO $connection)
     {
 
     }
+
+    //Публичные методы для вызова из других файлов
     public function saveUserToDatabase(User $user): int
     {
-        $query = <<<SQL
-        INSERT INTO `user` 
-        (`first_name`, `last_name`, `middle_name`, `gender`, `birth_date`, `email`, `phone`, `avatar_path`)
-        VALUES (:firstName, :lastName, :middleName, :gender, :birthDate, :email, :phone, :avatarPath);
+        $query =
+            <<<SQL
+            INSERT INTO `user` 
+                (`first_name`, `last_name`, `middle_name`, `gender`, 
+                 `birth_date`, `email`, `phone`, `avatar_path`)
+            VALUES (:firstName, :lastName, :middleName, :gender, 
+                    :birthDate, :email, :phone, :avatarPath);
         SQL;
         try {
             $statement = $this->connection->prepare($query);
@@ -79,9 +48,12 @@ class UserTable
 
     public function find(int $userId): ?User
     {
-        $query = "SELECT `user_id`, `first_name`, `last_name`, `middle_name`, 
-                         `gender`, `birth_date`, `email`, `phone`, `avatar_path`  
-                  FROM user WHERE user_id = $userId";
+        $query =
+            <<<SQL
+                SELECT `user_id`, `first_name`, `last_name`, `middle_name`, 
+                        `gender`, `birth_date`, `email`, `phone`, `avatar_path`  
+                FROM `user` WHERE `user_id` = $userId;
+            SQL;
         $statement = $this->connection->query($query);
         if ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             return $this->createUserFromRow($row);
@@ -91,7 +63,10 @@ class UserTable
 
     public function findAll(): ?array
     {
-        $query = "SELECT user_id, first_name FROM user";
+        $query =
+            <<<SQL
+                SELECT `user_id`, `first_name` FROM `user`;
+            SQL;
         $statement = $this->connection->query($query);
         $data = $statement->fetchAll(\PDO::FETCH_ASSOC);
         if ($data === false) {
@@ -102,14 +77,11 @@ class UserTable
 
     public function delete(int $userId): void
     {
-        $query = "SELECT avatar_path FROM user WHERE user_id = $userId";
-        $statement = $this->connection->query($query);
-        if ($statement === false) {
-            throw new \Exception("Failed to find user avatar");
-        }
-        $avatarFile = $statement->fetch(\PDO::FETCH_ASSOC);
-        unlink('uploads/' . $avatarFile['avatar_path']);
-        $query = "DELETE FROM user WHERE user_id = $userId";
+        $this->deleteAvatar($userId);
+        $query =
+            <<<SQL
+                DELETE FROM `user` WHERE `user_id` = $userId; 
+            SQL;
         $statement = $this->connection->query($query);
         if ($statement === false) {
             throw new \Exception("Failed to delete this user");
@@ -119,11 +91,14 @@ class UserTable
     public function updateData(array $data, int $userId): ?User
     {
         $user = $this->createUserFromRow($data);
-        $query = "UPDATE `user` 
-                  SET `first_name` = :firstName, `last_name` = :lastName, `middle_name` = :middleName, 
-                      `gender` = :gender, `birth_date` = :birthDate, `email` = :email, 
-                      `phone` = :phone, `avatar_path` = :avatarPath  
-                  WHERE user_id = $userId";
+        $query =
+            <<<SQL
+                UPDATE `user` 
+                SET `first_name` = :firstName, `last_name` = :lastName, `middle_name` = :middleName, 
+                    `gender` = :gender, `birth_date` = :birthDate, `email` = :email, 
+                    `phone` = :phone, `avatar_path` = :avatarPath  
+                WHERE `user_id` = $userId;
+            SQL;
         $statement = $this->connection->prepare($query);
         if ($statement === false) {
             throw new \Exception("FAILED to send DataBase request");
@@ -157,8 +132,10 @@ class UserTable
 
     public function updateAvatar(string $fileName, int $userId): ?string
     {
-        $this->deletePrevAvatar($userId);
-        $query = "UPDATE `user` SET avatar_path = :avatar_path WHERE user_id = $userId";
+        $query =
+            <<<SQL
+                UPDATE `user` SET `avatar_path` = :avatar_path WHERE `user_id` = $userId;
+            SQL;
         $statement = $this->connection->prepare($query);
         if ($statement === false) {
             throw new \Exception('INVALID DATABASE REQUEST. FAILED TO INSERT IMAGE INTO DATABASE.');
@@ -168,4 +145,41 @@ class UserTable
         ]);
         return $fileName;
     }
+
+    public function deleteAvatar(int $userId): void
+    {
+        $avatarName = $this->getAvatarName($userId);
+        unlink('uploads/' . $avatarName);
+    }
+
+    //Внутренние методы для обработки данных и внутренней логики
+    private function getAvatarName(int $userId): ?string
+    {
+        $query =
+            <<<SQL
+                SELECT avatar_path FROM user WHERE user_id = $userId;
+            SQL;
+        $statement = $this->connection->query($query);
+        if ($statement === false) {
+            throw new \Exception("Failed to find user avatar");
+        }
+        $avatarName = $statement->fetch(\PDO::FETCH_ASSOC);
+        return $avatarName['avatar_path'];
+    }
+
+    private function createUserFromRow(array $row): User
+    {
+        return new User(
+            $row['user_id'] ?? null,
+            $row['first_name'],
+            $row['last_name'],
+            $row['middle_name'] ?? null,
+            $row['gender'],
+            $row['birth_date'] ?? null,
+            $row['email'],
+            $row['phone'],
+            $row['avatar_path'] ?? null,
+        );
+    }
+
 }

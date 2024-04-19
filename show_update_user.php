@@ -6,4 +6,4 @@ if ($_GET === []) {
 }
 
 $controller = new \App\Controller\UserController();
-$controller->showUpdateForm($_GET);
+$controller->viewUpdateForm($_GET);
