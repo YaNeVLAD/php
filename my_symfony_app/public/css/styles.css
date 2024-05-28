@@ -1,0 +1,374 @@
+* {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+#header {
+    display: flex;
+    justify-content: center;
+}
+
+#content {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+#footer {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+    background-color: gainsboro;
+    border-top: 3px solid black;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    margin-top: 10px;
+    min-height: 60px;
+}
+
+.footer__link {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    padding: 15px;
+    background-color: darkorange;
+    border: 2px solid black;
+    border-radius: 3px;
+    margin: 5px;
+}
+
+.delete-button {
+    display: inline-block;
+    padding: 15px;
+    border: 2px solid black;
+    background-color: red;
+    color: white;
+    font-size: 16px;
+    text-decoration: none;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.footer__update-button {
+    display: inline-block;
+    padding: 15px;
+    background-color: grey;
+    color: white;
+    text-decoration: none;
+    border: 2px solid black;
+    margin: 5px;
+}
+
+.footer__delete-block {
+    margin: 5px;
+    border: 0;
+}
+
+
+.header__navigation {
+    display: flex;
+    justify-content: center;
+    padding: 3px;
+    border: 2px solid black;
+    border-radius: 5px;
+    min-width: 368px;
+}
+
+.header__link {
+    display: inline-block;
+    padding: 7px;
+    margin: 3px;
+    border: 1px solid black;
+    border-radius: 3px;
+    background-color: grey;
+    text-decoration: none;
+    color: white;
+}
+
+.content__title-block {
+    display: flex;
+    justify-content: center;
+}
+
+.content__title {
+    display: inline-block;
+    margin: 20px;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 7px;
+    border: 3px solid black;
+    border-radius: 10px;
+}
+
+.register-form__input,
+.register-form__input_image {
+    min-width: 300px;
+}
+
+.register-form__input-label {
+    display: block;
+}
+
+.register-form__input-data {
+    width: 99%;
+}
+
+.register-form__submit-button {
+    display: inline-block;
+    padding: 15px;
+    margin: 5px;
+    border: 2px solid black;
+    background-color: green;
+    text-decoration: none;
+    color: white;
+    min-width: 150px;
+}
+
+.register-form__submit-button:focus {
+    background-color: rgba(0, 128, 0, 0.7);
+}
+
+.register-form__input_image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.register-form__image-label {
+    padding: 3px;
+    background-color: grey;
+    border: 1px solid black;
+    border-radius: 3px;
+    color: white;
+    margin: 5px;
+}
+
+.register-form__image-label:active {
+    border: 3px solid black;
+}
+
+.users {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.preview {
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    border: 3px solid black;
+    border-radius: 10px;
+    margin: 5px;
+    padding: 5px;
+}
+
+.preview__image-block {
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid black;
+}
+
+.preview__image {
+    width: 100px;
+    height: 100px;
+    margin: 2px;
+    border: 1px solid black;
+    border-radius: 100px;
+}
+
+.preview__info {
+    border-bottom: 1px solid black;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview__buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.preview__view-button {
+    display: inline-block;
+    padding: 15px;
+    border: 2px solid black;
+    background-color: green;
+    text-decoration: none;
+    color: white;
+    margin: 5px;
+}
+
+.preview__delete-button {
+    display: inline-block;
+    padding: 15px;
+    border: 2px solid black;
+    background-color: red;
+    text-decoration: none;
+    color: white;
+    margin: 5px;
+}
+
+.view {
+    margin: 0 auto;
+}
+
+.view__image-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.view__image {
+    height: 150px;
+    width: 150px;
+    border-radius: 100px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.footer__nav_view {
+    display: flex;
+    align-items: center;
+}
+
+.user {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    padding: 7px;
+    border: 3px solid black;
+    border-radius: 10px;
+}
+
+.user__field-block {
+    min-width: 300px;
+}
+
+.user__field-title {
+    display: block;
+}
+
+.user__field-value {
+    display: inline-block;
+    margin: 3px;
+    width: 98%;
+    border: 1px solid black;
+    min-height: 20px;
+}
+
+.update {
+    margin: 0 auto;
+}
+
+.update-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 10px;
+    border: 3px solid black;
+    border-radius: 10px;
+}
+
+.update-form__input,
+.update-form__input_image {
+    min-width: 300px;
+}
+
+.update-form__label {
+    display: block;
+}
+
+.update-form__data {
+    width: 99%;
+    min-height: 20px;
+}
+
+.update-form__submit-button {
+    display: inline-block;
+    padding: 15px;
+    margin: 5px;
+    border: 2px solid black;
+    background-color: green;
+    text-decoration: none;
+    color: white;
+    min-width: 150px;
+}
+
+.update-form__submit-button:active {
+    background-color: rgba(0, 128, 0, 0.7);
+}
+
+.update-form__submit-button:focus {
+    background-color: rgba(0, 128, 0, 0.9);
+    border: 5px solid white;
+}
+
+.update-form__input_image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.update-form__image {
+    height: 150px;
+    width: 150px;
+    border-radius: 100px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.update-form__image-label {
+    padding: 3px;
+    background-color: grey;
+    border: 1px solid black;
+    border-radius: 3px;
+    color: white;
+    margin: 5px;
+}
+
+.update-form__image-label:active {
+    border: 3px solid black;
+}
+
+.update-form__nav {
+    display: flex;
+    align-items: center;
+}
+
+#error {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.error-block__text {
+    font-size: 18px;
+}
+
+.error__return {
+    padding: 7px;
+    margin: 10px;
+    background-color: green;
+    color: white;
+    border: 3px solid black;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.error__return:hover {
+    background-color: rgba(0, 128, 0, 0.8);
+}

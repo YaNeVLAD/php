@@ -1,14 +1,55 @@
 index:
     path: /
-    controller: App\Controller\PostController::index
+    controller: App\Controller\UserController::index
     methods: GET
 
-add_post:
-    path: /post/publish
-    controller: App\Controller\PostController::publishPost
+user_error:
+    path: /user/error
+    controller: App\Controller\UserController::errorPage
+    methods: GET
+
+show_user:
+    path: /user/profile/{userId}
+    controller: App\Controller\UserController::viewUser
+    methods: GET
+    requirements: 
+        userId: '\d+' 
+
+register_user_form:
+    path: /user/form/register
+    controller: App\Controller\UserController::showRegisterForm
+    methods: GET
+
+register_user:
+    path: /user/api/register
+    controller: App\Controller\UserController::registerUser
     methods: POST
 
-show_post:
-    path: /post/{postId}
-    controller: App\Controller\PostController::viewPost
+users_list:
+    path: /user/list
+    controller: App\Controller\UserController::viewAllUsers
     methods: GET
+
+delete_user:
+    path: /user/api/delete/{userId}
+    controller: App\Controller\UserController::removeUser
+    methods: GET
+    requirements: 
+        userId: '\d+'
+
+update_user_form:
+    path: /user/form/update/{userId}
+    controller: App\Controller\UserController::showUpdateForm
+    methods: GET
+    requirements: 
+        userId: '\d+'
+    
+update_user:
+    path: /user/api/update/{userId}
+    controller: App\Controller\UserController::updateUser
+    methods: POST
+    requirements: 
+        userId: '\d+'
+
+# page_404:
+    #путь на страницу

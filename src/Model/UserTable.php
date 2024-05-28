@@ -16,12 +16,12 @@ class UserTable
     {
         $query =
             <<<SQL
-            INSERT INTO `user` 
-                (`first_name`, `last_name`, `middle_name`, `gender`, 
-                 `birth_date`, `email`, `phone`, `avatar_path`)
-            VALUES (:firstName, :lastName, :middleName, :gender, 
-                    :birthDate, :email, :phone, :avatarPath);
-        SQL;
+                INSERT INTO `user` 
+                    (`first_name`, `last_name`, `middle_name`, `gender`, 
+                     `birth_date`, `email`, `phone`, `avatar_path`)
+                VALUES (:firstName, :lastName, :middleName, :gender, 
+                        :birthDate, :email, :phone, :avatarPath);
+            SQL;
         try {
             $statement = $this->connection->prepare($query);
             if ($statement === false) {
@@ -88,9 +88,8 @@ class UserTable
         }
     }
 
-    public function updateData(array $data, int $userId): ?User
+    public function updateData(User $user, int $userId): ?User
     {
-        $user = $this->createUserFromRow($data);
         $query =
             <<<SQL
                 UPDATE `user` 
@@ -166,8 +165,9 @@ class UserTable
         $avatarName = $statement->fetch(\PDO::FETCH_ASSOC);
         return $avatarName['avatar_path'];
     }
-
-    private function createUserFromRow(array $row): User
+//Разделить createUserFromRow - данные из БД превращает в объект User
+//Новый метод createUserFromRequest - превращать данные из запроса в объект User
+    public function createUserFromRow(array $row): User
     {
         return new User(
             $row['user_id'] ?? null,

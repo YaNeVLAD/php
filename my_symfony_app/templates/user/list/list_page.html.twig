@@ -1,0 +1,17 @@
+{% extends "base/index.html.twig" %}
+
+{% block title %}
+	Users List
+{% endblock %}
+
+{% block contentTitle %}
+	Total Users: {{ users_list|length }}
+{% endblock %}
+
+{% block content %}
+	<div class="users">
+		{% for user in users_list %}
+			{% include "user/list/list_item.html.twig" %}
+		{% endfor %}
+	</div>
+{% endblock %}

@@ -1,5 +1,11 @@
 <?php
 declare(strict_types=1);
+//Изучить интерфейсы PHP
+//Интерфейс User Repository
+//Где будут методы без реализации
+//интерфейс задаёт набор методов у класса, которые его реализуют
+//
+
 
 namespace App\Controller;
 
@@ -11,6 +17,8 @@ class UserController
 {
     //Переменные и конструктор класса
     private const BASE_IMAGE_PATH = 'C:\webcourse\php\uploads\base-image.png';
+    private const ACCEPTED_FILES_EXTENTIONS = [null, 'image/png', 'image/gif', 'image/jpg', 'image/jpeg'];
+
     private UserTable $table;
 
     //Публичные методы для вызова из других файлов
@@ -25,9 +33,11 @@ class UserController
         require_once __DIR__ . '/../../src/View/hub.php';
     }
 
+    //реализовать медот Store который в зависимости от переданного параметра делаеть Create User или Update User
     public function createUser(array $request, array $avatarPath): void
     {
         try {
+            $type = $this->defineFileExtention($avatarPath);
             $user = new User(
                 null,
 
@@ -52,7 +62,6 @@ class UserController
                 null,
             );
             $userId = $this->table->saveUserToDatabase($user);
-            $type = $this->defineFileExtention($avatarPath);
             $this->saveAvatar($avatarPath, $userId, $type);
         } catch (\Exception $e) {
             echo $e . "<br>";
@@ -64,8 +73,8 @@ class UserController
 
     public function viewUser(array $request): void
     {
-        $userId = $this->defineUserId($request);
         try {
+            $userId = $this->defineUserId($request);
             $user = $this->table->find($userId);
             if ($user === null) {
                 die('ERROR. This user doesn\'t exist');
@@ -77,6 +86,7 @@ class UserController
         require __DIR__ . '/../View/view_form.php';
     }
 
+//Добавить модель для элемента листа viewObj в котором будут данные, выводимые на странице users_list
     public function viewAllUsers(): void
     {
         try {
@@ -90,8 +100,8 @@ class UserController
 
     public function viewUpdateForm(array $request): void
     {
-        $userId = $this->defineUserId($request);
         try {
+            $userId = $this->defineUserId($request);
             $user = $this->table->find($userId);
             if ($user === null) {
                 die('ERROR. This user doesn\'t exist');
@@ -105,8 +115,9 @@ class UserController
 
     public function updateUser(array $getRequest, array $postRequest, array $avatarPath): void
     {
-        $userId = $this->defineUserId($getRequest);
         try {
+            $userId = $this->defineUserId($getRequest);
+            $user = $this->table->createUserFromRow($postRequest);
             $user = $this->table->updateData($postRequest, $userId);
             if ($avatarPath['tmp_name'] != null) {
                 $type = $this->defineFileExtention($avatarPath);
@@ -128,8 +139,8 @@ class UserController
 
     public function deleteUser(array $request): void
     {
-        $userId = $this->defineUserId($request);
         try {
+            $userId = $this->defineUserId($request);
             $this->table->delete($userId);
         } catch (\Exception $e) {
             echo $e;
@@ -139,16 +150,19 @@ class UserController
     }
 
     //Внутренние методы для обработки данных и внутренней логики
+
+//Разделить createUserFromRow - данные из БД превращает в объект User
+//Новый метод createUserFromRequest - превращать данные из запроса в объект User
+
     private function defineUserId(array $request): int
+    //проверку на валидность на тип int
     {
         $userId = $request['userId'] ?? null;
-        try {
-            if ($userId === null) {
-                throw new \InvalidArgumentException('Parameter id is not defined');
-            }
-        } catch (\InvalidArgumentException $e) {
-            echo $e;
-            die();
+        if ($userId === null) {
+            throw new \Exception('Parameter id is not defined');
+        }
+        if ((int) $userId === 0) {
+            throw new \Exception('Parameter id must be type of integer');
         }
         return (int) $userId;
     }
@@ -160,7 +174,7 @@ class UserController
         $newFilePath = 'uploads/' . $newFileName;
         $this->table->updateAvatar($newFileName, $userId);
         ($tmpFile === '')
-            ? copy(UserController::BASE_IMAGE_PATH, $newFilePath)
+            ? copy(self::BASE_IMAGE_PATH, $newFilePath)
             : move_uploaded_file($tmpFile, $newFilePath);
     }
 
@@ -173,27 +187,32 @@ class UserController
         $newFileName = 'avatar' . $userId . $type;
         return $newFileName;
     }
-
+    //создать массив с допустимыми типами
     private function defineFileExtention(?array $file): ?string
     {
         (empty($file['tmp_name']))
             ? $type = null
             : $type = mime_content_type($file['tmp_name']);
         try {
-            switch ($type) {
-                case 'image/png':
-                case 'image/jpeg':
-                case 'image/jpg':
-                case 'image/gif':
-                case null;
-                    break;
-                default:
-                    throw new \Exception("WRONG Image type. Must be .png, .jpeg, .jpg or .gif");
+            if (in_array($type, self::ACCEPTED_FILES_EXTENTIONS)) {
+                return $type;
+
+            } else {
+                throw new \Exception("WRONG Image type. Must be .png, .jpeg, .jpg or .gif");
             }
+            // switch ($type) {
+            //     case 'image/png':
+            //     case 'image/jpeg':
+            //     case 'image/jpg':
+            //     case 'image/gif':
+            //     case null;
+            //         break;
+            //     default:
+            //         throw new \Exception("WRONG Image type. Must be .png, .jpeg, .jpg or .gif");
+            // }
         } catch (\Exception $e) {
             echo $e;
             die();
         }
-        return $type;
     }
 }

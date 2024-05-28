@@ -1,0 +1,40 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		{% block head %}
+			<link rel="stylesheet" href="/css/styles.css"/>
+			<title>
+				{% block title %}
+					Hub
+				{% endblock %}
+			</title>
+		{% endblock %}
+	</head>
+
+	<body>
+		<header id="header">
+			{% block header %}
+				{% include "base/header.html.twig" %}
+			{% endblock %}
+		</header>
+		<main style="height: 100%">
+			<div class="content__title-block">
+				<h1 class="content__title">
+					{% block contentTitle %}
+						Hub
+					{% endblock %}
+				</h1>
+			</div>
+			<div id="content"> 
+				{% block content %}
+					<h2>Welcome to my Symfony Project!</h2>
+				{% endblock %}
+			</div>
+		</main>
+			<footer id="footer">
+				{% block footer %}
+					{% include "base/footer.html.twig" %}
+				{% endblock %}
+			</footer>
+		</body>
+
+	</html>
