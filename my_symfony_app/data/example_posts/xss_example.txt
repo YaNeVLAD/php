@@ -1,2 +1,0 @@
-Книга Head First SQL <script>alert('Привет, мир!')</script>
-Очень хорошая, рекомендую

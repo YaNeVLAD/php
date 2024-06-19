@@ -15,6 +15,7 @@ class ListObject
 
     }
 
+    //GET методы
     public function getId(): ?int
     {
         return $this->userId;

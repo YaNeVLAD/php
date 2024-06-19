@@ -5,39 +5,52 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Entity\ListObject;
-use App\Service\Data\UserParams;
-use App\Service\Logic\UserAvatar;
-use App\Repository\UserRepository;
+use App\Service\Data\UserData;
+use App\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-class UserService
+class UserService implements UserServiceInterface
 {
     //Переменные, константы и конструктор класса
+    public const WRONG_EMAIL = "email";
+
+    public const WRONG_PHONE = "phone";
+
     private const REGISTER_METHOD = 1;
 
     private const UPDATE_METHOD = 2;
 
     private const OK_STATUS = 'ok';
 
-    private UserRepository $userRepository;
+    private const USER_IMAGES_DIR = 'user_images';
 
-    private UserAvatar $avatar;
+    private UserRepositoryInterface $userRepository;
 
-    public function __construct(UserRepository $userRepository, UserAvatar $avatar)
+    private ImageServiceInterface $imageService;
+
+    public function __construct(UserRepositoryInterface $userRepository, ImageServiceInterface $imageService)
     {
         $this->userRepository = $userRepository;
-        $this->avatar = $avatar;
+        $this->imageService = $imageService;
     }
 
     //Публичные методы
-    public function getUser(int $userId): User
+    public function getUser(int $userId): UserData
     {
         $user = $this->userRepository->findById($userId);
+
         if ($user === null) {
             throw new \Exception('User with ID ' . $userId . ' does\'t exist ');
         }
 
-        return $user;
+        $userData = $this->createFromUser($user);
+
+        return $userData;
+    }
+
+    public function getUserByEmail(string $email): UserData
+    {
+        return $this->createFromUser($this->userRepository->findByEmail($email));
     }
 
     public function getAllUsers(): ?array
@@ -59,25 +72,25 @@ class UserService
     public function deleteUser(int $userId): void
     {
         $user = $this->userRepository->findById($userId);
-        $this->avatar->delete($user->getAvatarPath());
+        $this->imageService->delete($user->getAvatarPath(), self::USER_IMAGES_DIR);
         $this->userRepository->delete($user);
     }
 
-    public function createUser(UserParams $userParams, ?UploadedFile $avatar, ?string $destination): int
+    public function createUser(UserData $userData, ?UploadedFile $avatar): int
     {
-        if ($this->avatar->validateExtention($avatar) === false) {
-            throw new \Exception("Invalid Image extention. Must be .png .gif .jpeg .jpg");
+        if ($this->imageService->getAndValidateExtention($avatar) === false) {
+            throw new \Exception("Invalid Image extention. Must be ." . implode(' .', $this->imageService->getAllowedExtentions()));
         }
 
-        if ($field = $this->checkUniqueFields($userParams, null, self::REGISTER_METHOD)) {
+        if ($field = $this->checkUniqueFields($userData, null, self::REGISTER_METHOD)) {
             throw new \Exception('Your ' . $field . ' has been already taken');
         }
 
-        $user = $this->createFromParams($userParams);
+        $user = $this->createFromData($userData);
 
         $userId = $this->userRepository->store($user);
 
-        $avatarPath = $this->avatar->save($avatar, $userId, $destination);
+        $avatarPath = $this->imageService->save($avatar, $userId, self::USER_IMAGES_DIR);
         $user->setAvatarPath($avatarPath);
 
         $this->userRepository->store($user);
@@ -85,25 +98,24 @@ class UserService
         return $userId;
     }
 
-    public function editUser(UserParams $userParams, ?UploadedFile $avatar, ?string $destination): int
+    public function editUser(UserData $userData, ?UploadedFile $avatar): int
     {
-        if ($this->avatar->validateExtention($avatar) === false) {
-            throw new \Exception("Invalid Image extention. Must be .png .gif .jpeg .jpg");
+        if ($this->imageService->getAndValidateExtention($avatar) === false) {
+            throw new \Exception("Invalid Image extention. Must be ." . implode(' .', $this->imageService->getAllowedExtentions()));
         }
 
-        $userId = $userParams->getId();
+        $userId = $userData->getId();
         $user = $this->userRepository->findById($userId);
 
-        if ($field = $this->checkUniqueFields($userParams, $user, self::UPDATE_METHOD)) {
+        if ($field = $this->checkUniqueFields($userData, $user, self::UPDATE_METHOD)) {
             throw new \Exception('Your ' . $field . ' has been already taken');
         }
 
-        $this->updateFromParams($userParams, $user);
+        $this->updateFromData($userData, $user);
 
         if ($avatar) {
-            $prev = $this->userRepository->findById($userParams->getId())->getAvatarPath();
-            $this->avatar->delete($prev);
-            $new = $this->avatar->save($avatar, $userId, $destination);
+            $prev = $this->userRepository->findById($userData->getId())->getAvatarPath();
+            $new = $this->imageService->replace($avatar, $prev, $userId, self::USER_IMAGES_DIR);
             $user->setAvatarPath($new);
         }
 
@@ -113,48 +125,63 @@ class UserService
     }
 
     //Приватные методы
-    private function createFromParams(UserParams $params): User
+    private function createFromData(UserData $userData): User
     {
         return new User(
-            null,
-            $params->getFirstName(),
-            $params->getLastName(),
-            $params->getMiddleName(),
-            $params->getGender(),
-            $params->getBirthDate(),
-            $params->getEmail(),
-            $params->getPhone(),
-            null,
+            $userData->getId(),
+            $userData->getFirstName(),
+            $userData->getLastName(),
+            $userData->getMiddleName(),
+            $userData->getGender(),
+            $userData->getBirthDate(),
+            $userData->getEmail(),
+            $userData->getPhone(),
+            $userData->getAvatarPath(),
         );
     }
 
-    private function updateFromParams(UserParams $params, User $user): void
+    private function createFromUser(User $user): UserData
     {
-        $user->setFirstName($params->getFirstName());
-        $user->setLastName($params->getLastName());
-        $user->setMiddleName($params->getMiddleName());
-        $user->setGender($params->getGender());
-        $user->setBirthDate($params->getBirthDate());
-        $user->setEmail($params->getEmail());
-        $user->setPhone($params->getPhone());
+        return new UserData(
+            $user->getId(),
+            $user->getFirstName(),
+            $user->getLastName(),
+            $user->getMiddleName(),
+            $user->getGender(),
+            $user->getBirthDate(),
+            $user->getEmail(),
+            $user->getPhone(),
+            $user->getAvatarPath(),
+        );
     }
 
-    private function checkUniqueFields(UserParams $userParams, ?User $user, int $method): ?string
+    private function updateFromData(UserData $userData, User $user): void
+    {
+        $user->setFirstName($userData->getFirstName());
+        $user->setLastName($userData->getLastName());
+        $user->setMiddleName($userData->getMiddleName());
+        $user->setGender($userData->getGender());
+        $user->setBirthDate($userData->getBirthDate());
+        $user->setEmail($userData->getEmail());
+        $user->setPhone($userData->getPhone());
+    }
+
+    private function checkUniqueFields(UserData $userData, ?User $user, int $method): ?string
     {
         if ($method === self::UPDATE_METHOD) {
-            if (!$this->isEmailUnique($user->getEmail(), $userParams->getEmail())) {
-                return 'email';
+            if (!$this->isEmailUnique($user->getEmail(), $userData->getEmail())) {
+                return self::WRONG_EMAIL;
             }
-            if (!$this->isPhoneUnique($user->getPhone(), $userParams->getPhone())) {
-                return 'phone';
+            if (!$this->isPhoneUnique($user->getPhone(), $userData->getPhone())) {
+                return self::WRONG_PHONE;
             }
         }
         if ($method === self::REGISTER_METHOD) {
-            if ($this->userRepository->findByEmail($userParams->getEmail())) {
-                return 'email';
+            if ($this->userRepository->findByEmail($userData->getEmail())) {
+                return self::WRONG_EMAIL;
             }
-            if ($this->userRepository->findByPhone($userParams->getPhone())) {
-                return 'phone';
+            if ($this->userRepository->findByPhone($userData->getPhone())) {
+                return self::WRONG_PHONE;
             }
         }
         return null;

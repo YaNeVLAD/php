@@ -3,32 +3,31 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Service\UserService;
-use App\Service\Data\UserParams;
+use App\Constants\AppConstants;
+use App\Service\Data\UserData;
+use App\Service\UserServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-    
+
 class UserController extends AbstractController
 {
     //Переменные, константы и конструктор класса
     private const NOT_NULLABLE_FORM_FIELDS = ['first_name', 'last_name', 'gender', 'birth_date', 'email'];
 
-    private UserService $userService;
+    private UserServiceInterface $userService;
 
-    public function __construct(UserService $userService)
+    public function __construct(UserServiceInterface $userService)
     {
         $this->userService = $userService;
     }
 
     //Публичные методы
-    public function index(): Response
+    public function showRegisterForm(SessionInterface $session): Response
     {
-        return $this->render('base/index.html.twig');
-    }
+        $session->set(AppConstants::USER_SESSION_NAME, AppConstants::UNAUTHORIZED_ID);
 
-    public function showRegisterForm(): Response
-    {
         return $this->render('user/register/register_page.html.twig');
     }
 
@@ -40,18 +39,21 @@ class UserController extends AbstractController
         ]);
     }
 
-    public function viewUser(int $userId): Response
+    public function viewUser(int $userId, SessionInterface $session): Response
     {
         try {
-            $user = $this->userService->getUser($userId);
+            $userData = $this->userService->getUser($userId);
+            //Test Auth
+            $session->set(AppConstants::USER_SESSION_NAME, $userData->getId());
+
         } catch (\Exception $e) {
-            return $this->redirectToRoute('user_error', [
+            return $this->redirectToRoute('error_user', [
                 'errorTitle' => 'Failed To Show User',
                 'errorText' => $e->getMessage(),
             ]);
         }
 
-        return $this->render('user/view/view_page.html.twig', ['user' => $user]);
+        return $this->render('user/view/view_page.html.twig', ['user' => $userData]);
     }
 
     public function viewAllUsers(): Response
@@ -59,7 +61,7 @@ class UserController extends AbstractController
         try {
             $list = $this->userService->getAllUsers();
         } catch (\Exception $e) {
-            return $this->redirectToRoute('user_error', [
+            return $this->redirectToRoute('error_user', [
                 'errorTitle' => 'Failed To Show Users List',
                 'errorText' => $e->getMessage(),
             ]);
@@ -71,15 +73,15 @@ class UserController extends AbstractController
     public function showUpdateForm(int $userId): Response
     {
         try {
-            $user = $this->userService->getUser($userId);
+            $userData = $this->userService->getUser($userId);
         } catch (\Exception $e) {
-            return $this->redirectToRoute('user_error', [
+            return $this->redirectToRoute('error_user', [
                 'errorTitle' => 'Failed To Show Update Form',
                 'errorText' => $e->getMessage(),
             ]);
         }
 
-        return $this->render('user/update/update_page.html.twig', ['user' => $user]);
+        return $this->render('user/update/update_page.html.twig', ['user' => $userData]);
     }
 
     public function removeUser(int $userId): Response
@@ -87,26 +89,25 @@ class UserController extends AbstractController
         try {
             $this->userService->deleteUser($userId);
         } catch (\Exception $e) {
-            return $this->redirectToRoute('user_error', [
+            return $this->redirectToRoute('error_user', [
                 'errorTitle' => 'Failed To Delete User',
                 'errorText' => $e->getMessage(),
             ]);
         }
 
-        return $this->redirectToRoute('users_list', []);
+        return $this->redirectToRoute('list_user', []);
     }
 
     public function registerUser(Request $request): Response
     {
         try {
             $avatar = $request->files->get('avatar_path');
-            $destination = $this->getParameter('kernel.project_dir') . '/public/uploads';
 
-            $userParams = $this->createFromRequest($request);
+            $userData = $this->createFromRequest($request);
 
-            $userId = $this->userService->createUser($userParams, $avatar, $destination);
+            $userId = $this->userService->createUser($userData, $avatar);
         } catch (\Exception $e) {
-            return $this->redirectToRoute('user_error', [
+            return $this->redirectToRoute('error_user', [
                 'errorTitle' => 'Failed To Add User',
                 'errorText' => $e->getMessage(),
             ]);
@@ -119,13 +120,12 @@ class UserController extends AbstractController
     {
         try {
             $newAvatar = $request->files->get('avatar_path');
-            $destination = $this->getParameter('kernel.project_dir') . '/public/uploads';
 
-            $userParams = $this->createFromRequest($request);
+            $userData = $this->createFromRequest($request);
 
-            $userId = $this->userService->editUser($userParams, $newAvatar, $destination);
+            $userId = $this->userService->editUser($userData, $newAvatar);
         } catch (\Exception $e) {
-            return $this->redirectToRoute('user_error', [
+            return $this->redirectToRoute('error_user', [
                 'errorTitle' => 'Failed To Update User',
                 'errorText' => $e->getMessage(),
             ]);
@@ -135,9 +135,9 @@ class UserController extends AbstractController
     }
 
     //Приватные методы
-    private function createFromRequest(Request $request): UserParams
+    private function createFromRequest(Request $request): UserData
     {
-        $userInfo = new UserParams(
+        return new UserData(
             (int) $request->get('userId') ?? null,
             $this->validateData($request, 'first_name'),
             $this->validateData($request, 'last_name'),
@@ -148,8 +148,6 @@ class UserController extends AbstractController
             $this->validateData($request, 'phone'),
             null,
         );
-
-        return $userInfo;
     }
 
     private function validateData(Request $request, string $formFieldName): ?string

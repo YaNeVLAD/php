@@ -1,11 +1,13 @@
 index:
     path: /
-    controller: App\Controller\UserController::index
+    controller: App\Controller\StoreFrontController::index
     methods: GET
-
-user_error:
+#
+# USER ROUTES
+#
+error_user:
     path: /user/error
-    controller: App\Controller\UserController::errorPage
+    controller: App\Controller\StoreFrontController::errorPage
     methods: GET
 
 show_user:
@@ -16,7 +18,7 @@ show_user:
         userId: '\d+' 
 
 register_user_form:
-    path: /user/form/register
+    path: /user/register
     controller: App\Controller\UserController::showRegisterForm
     methods: GET
 
@@ -25,7 +27,7 @@ register_user:
     controller: App\Controller\UserController::registerUser
     methods: POST
 
-users_list:
+list_user:
     path: /user/list
     controller: App\Controller\UserController::viewAllUsers
     methods: GET
@@ -38,7 +40,7 @@ delete_user:
         userId: '\d+'
 
 update_user_form:
-    path: /user/form/update/{userId}
+    path: /user/update/{userId}
     controller: App\Controller\UserController::showUpdateForm
     methods: GET
     requirements: 
@@ -51,5 +53,85 @@ update_user:
     requirements: 
         userId: '\d+'
 
-# page_404:
-    #путь на страницу
+login_user_page:
+    path: /user/login
+    controller: App\Controller\UserController
+    methods: GET
+
+login_user:
+    path: /user/api/login/{?}
+    controller: App\Controller\UserController
+    methods: POST
+    requirements: 
+#
+# STORE ROUTES
+#
+error_store:
+    path: /store/error
+    controller: App\Controller\StoreFrontController::errorPage
+    methods: GET
+
+show_order: 
+    path: /store/order/{orderId}
+    controller: App\Controller\StoreFrontController::showOrder
+    methods: GET
+    requirements: 
+        orderId: '\d+' 
+
+list_order:
+    path: /store/list/{category}
+    controller: App\Controller\StoreFrontController::listByCategory
+    methods: GET
+
+basket_order_form:
+    path: /store/basket
+    controller: App\Controller\StoreFrontController::showBasket
+    methods: GET
+
+add_order_to_basket:
+    path: /store/api/add/{orderId}
+    controller: App\Controller\StoreFrontController::addToBasket
+    methods: GET
+    requirements: 
+        orderId: '\d+'
+
+remove_order_from_basket:
+    path: /store/api/remove/{orderId}
+    controller: App\Controller\StoreFrontController::removeFromBasket
+    methods: GET
+    requirements:
+        userId: '\d+' 
+        orderId: '\d+'
+#
+# ADMIN ROUTES
+#
+delete_order:
+    path: /store/api/delete/{orderId}
+    controller: App\Controller\OrderController::deleteOrder
+    methods: GET
+    requirements: 
+        orderId: '\d+'
+
+create_order_form:
+    path: /store/create/{currCategory}
+    controller: App\Controller\StoreFrontController::showCreateForm
+    methods: GET
+
+create_order:
+    path: /store/api/create
+    controller: App\Controller\OrderController::createOrder
+    methods: POST
+
+update_order_form:
+    path: /store/update/{orderId}
+    controller: App\Controller\OrderController::showUpdateForm
+    methods: GET
+    requirements: 
+        orderId: '\d+'
+
+update_order:
+    path: /store/api/update/{orderId}
+    controller: App\Controller\OrderController::updateOrder
+    methods: POST 
+    requirements: 
+        orderId: '\d+'

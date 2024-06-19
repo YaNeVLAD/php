@@ -5,7 +5,7 @@
                           https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
      <entity name="App\Entity\User" table="user">
-        <id name="userId" type="integer" column="user_id">
+        <id name="userId" type="integer" column="user_id" options="{'unsigned': true}">
             <generator strategy="IDENTITY"/> 
         </id>
     
@@ -17,7 +17,10 @@
         <field name="email" column="email" type="string" length="255" nullable="false"/>
         <field name="phone" column="phone" type="string" length="255" nullable="true"/>
         <field name="avatarPath" column="avatar_path" type="string" length="255" nullable="true"/>
-
+        <indexes>
+            <index name="email_idx" columns="email"/>
+            <index name="phone_idx" columns="phone"/>
+        </indexes>
     </entity>
 
 </doctrine-mapping>

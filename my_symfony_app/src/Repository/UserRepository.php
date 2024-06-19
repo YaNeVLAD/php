@@ -6,7 +6,7 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Interface\UserRepositoryInterface;
+use App\Repository\UserRepositoryInterface;
 
 class UserRepository implements UserRepositoryInterface
 {

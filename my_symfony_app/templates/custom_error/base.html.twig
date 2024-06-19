@@ -20,7 +20,9 @@
         <div id="error">
             {% block error %}
             {% endblock %}
-            <a class="error__return" href="{{path('index')}}">Return To Main Page</a>
+            <a class="error__return" href="{{path('list_order', {category: 'pizza'})}}">
+                Return To Home Page
+            </a>
         </div>
     </body>
 

@@ -29,9 +29,9 @@
 	</div>
 	<div class="view__image-block">
 		{% if user.getAvatarPath == null %}
-			<img src="/uploads/base-image.png" alt="Uploaded Image" class="view__image">
+			<img src="/uploads/user_images/base_image.png" alt="Uploaded Image" class="view__image">
 		{% else %}
-			<img src="/uploads/{{user.getAvatarPath}}" alt="Uploaded Image" class="view__image">
+			<img src="/uploads/user_images/{{user.getAvatarPath}}" alt="Uploaded Image" class="view__image">
 		{% endif %}
 	</div>
 </div>
